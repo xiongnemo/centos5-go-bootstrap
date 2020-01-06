@@ -1,5 +1,7 @@
 FROM centos:5.11
 
+LABEL maintainer="darren.hoo@gmail.com"
+
 RUN rm -f /etc/yum.repos.d/*.repo
 RUN sed -i 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf 
 
