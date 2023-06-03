@@ -1,0 +1,79 @@
+diff --git a/src/cmd/cgo/gcc.go b/src/cmd/cgo/gcc.go
+index 5df4a8c4ad..efcbbdb982 100644
+--- a/src/cmd/cgo/gcc.go
++++ b/src/cmd/cgo/gcc.go
+@@ -1688,7 +1688,7 @@ func (p *Package) gccCmd() []string {
+                c = append(c, "-mcmodel=large")
+        }
+        // disable LTO so we get an object whose symbols we can read
+-       c = append(c, "-fno-lto")
++       // c = append(c, "-fno-lto")
+        c = append(c, "-") //read input from standard input
+        return c
+ }
+diff --git a/src/cmd/cgo/out.go b/src/cmd/cgo/out.go
+index d26f9e76a3..6ae7ae2252 100644
+--- a/src/cmd/cgo/out.go
++++ b/src/cmd/cgo/out.go
+@@ -885,9 +885,9 @@ func (p *Package) writeExports(fgo2, fm, fgcc, fgcch io.Writer) {
+        // We use packed structs, but they are always aligned.
+        // The pragmas and address-of-packed-member are only recognized as
+        // warning groups in clang 4.0+, so ignore unknown pragmas first.
+-       fmt.Fprintf(fgcc, "#pragma GCC diagnostic ignored \"-Wunknown-pragmas\"\n")
+-       fmt.Fprintf(fgcc, "#pragma GCC diagnostic ignored \"-Wpragmas\"\n")
+-       fmt.Fprintf(fgcc, "#pragma GCC diagnostic ignored \"-Waddress-of-packed-member\"\n")
++       // fmt.Fprintf(fgcc, "#pragma GCC diagnostic ignored \"-Wunknown-pragmas\"\n")
++       // fmt.Fprintf(fgcc, "#pragma GCC diagnostic ignored \"-Wpragmas\"\n")
++       // fmt.Fprintf(fgcc, "#pragma GCC diagnostic ignored \"-Waddress-of-packed-member\"\n")
+ 
+        fmt.Fprintf(fgcc, "extern void crosscall2(void (*fn)(void *), void *, int, size_t);\n")
+        fmt.Fprintf(fgcc, "extern size_t _cgo_wait_runtime_init_done(void);\n")
+@@ -1496,10 +1496,10 @@ extern char* _cgo_topofstack(void);
+   We use packed structs, but they are always aligned.
+   The pragmas and address-of-packed-member are only recognized as warning
+   groups in clang 4.0+, so ignore unknown pragmas first.
+-*/
+ #pragma GCC diagnostic ignored "-Wunknown-pragmas"
+ #pragma GCC diagnostic ignored "-Wpragmas"
+ #pragma GCC diagnostic ignored "-Waddress-of-packed-member"
++*/
+ 
+ #include <errno.h>
+ #include <string.h>
+diff --git a/src/runtime/internal/syscall/defs_linux_amd64.go b/src/runtime/internal/syscall/defs_linux_amd64.go
+index 886eb5bda2..21159b4a5f 100644
+--- a/src/runtime/internal/syscall/defs_linux_amd64.go
++++ b/src/runtime/internal/syscall/defs_linux_amd64.go
+@@ -10,6 +10,7 @@ const (
+        SYS_EPOLL_PWAIT   = 281
+        SYS_EPOLL_CREATE1 = 291
+        SYS_EPOLL_PWAIT2  = 441
++       SYS_EPOLL_WAIT    = 232
+ 
+        EPOLLIN       = 0x1
+        EPOLLOUT      = 0x4
+diff --git a/src/runtime/internal/syscall/syscall_linux.go b/src/runtime/internal/syscall/syscall_linux.go
+index a103d318c4..bfe2b13a93 100644
+--- a/src/runtime/internal/syscall/syscall_linux.go
++++ b/src/runtime/internal/syscall/syscall_linux.go
+@@ -52,7 +52,7 @@ func EpollWait(epfd int32, events []EpollEvent, maxev, waitms int32) (n int32, e
+        } else {
+                ev = unsafe.Pointer(&_zero)
+        }
+-       r1, _, e := Syscall6(SYS_EPOLL_PWAIT, uintptr(epfd), uintptr(ev), uintptr(maxev), uintptr(waitms), 0, 0)
++       r1, _, e := Syscall6(SYS_EPOLL_WAIT, uintptr(epfd), uintptr(ev), uintptr(maxev), uintptr(waitms), 0, 0)
+        return int32(r1), e
+ }
+ 
+diff --git a/src/runtime/sys_linux_amd64.s b/src/runtime/sys_linux_amd64.s
+index c7a89ba536..aa5c2a323d 100644
+--- a/src/runtime/sys_linux_amd64.s
++++ b/src/runtime/sys_linux_amd64.s
+@@ -43,6 +43,7 @@
+ #define SYS_timer_delete       226
+ #define SYS_clock_gettime      228
+ #define SYS_exit_group         231
++#define SYS_epoll_wait                 232
+ #define SYS_tgkill             234
+ #define SYS_openat             257
+ #define SYS_faccessat          269
