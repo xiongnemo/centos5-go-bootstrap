@@ -10,15 +10,15 @@ RUN rm -f /etc/yum.repos.d/*.repo; \
 
 From base AS builder
 WORKDIR /root/
-COPY go1.17.13-fix.diff /tmp/
+COPY go1.20.4-fix.diff /tmp/
 RUN set -eux; \
     curl -s -k https://dl.google.com/go/go1.4.3.linux-amd64.tar.gz |tar zxf -; \
     mv go /usr/local/go1.4.3; \
     export GOROOT_BOOTSTRAP=/usr/local/go1.4.3/; \
-    curl -s -k https://dl.google.com/go/go1.17.13.src.tar.gz |tar zxf -; \
-    cd go; patch -p1 < /tmp/go1.17.13-fix.diff; \
+    curl -s -k https://dl.google.com/go/go1.20.4.src.tar.gz |tar zxf -; \
+    cd go; patch -p1 < /tmp/go1.20.4-fix.diff; \
     cd src; ./make.bash
 
 From base 
-COPY --from=builder /root/go /usr/local/go1.17.13
-ENV GOROOT_BOOTSTRAP=/usr/local/go1.17.13
+COPY --from=builder /root/go /usr/local/go1.20.4
+ENV GOROOT_BOOTSTRAP=/usr/local/go1.20.4
